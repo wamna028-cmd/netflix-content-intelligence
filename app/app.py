@@ -96,11 +96,23 @@ st.markdown(
 )
 st.caption("Data source: netflix_analysis.db")
 
-c1, c2, c3, c4 = st.columns(4)
-c1.metric("Titles", f"{len(f):,}")
-c2.metric("Average rating", f"{f['vote_average'].mean():.2f}" if len(f) else "-")
-c3.metric("Countries", countries[countries["title_id"].isin(ids) & (countries["country"] != "Unknown")]["country"].nunique())
-c4.metric("Languages", f["language"].nunique())
+tv_selected = "tv" in media_sel
+cols = st.columns(4 if tv_selected else 3)
+
+cols[0].metric("Titles", f"{len(f):,}")
+cols[1].metric("Average rating", f"{f['vote_average'].mean():.2f}" if len(f) else "-")
+
+if tv_selected:
+    tv_ids_hdr = titles[titles["media_type"] == "tv"]["title_id"]
+    n_countries = countries[
+        countries["title_id"].isin(tv_ids_hdr)
+        & countries["title_id"].isin(ids)
+        & (countries["country"] != "Unknown")
+    ]["country"].nunique()
+    cols[2].metric("Countries (TV)", n_countries)
+    cols[3].metric("Languages", f["language"].nunique())
+else:
+    cols[2].metric("Languages", f["language"].nunique())
 
 st.divider()
 
