@@ -99,7 +99,7 @@ st.caption("Data source: netflix_analysis.db")
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("Titles", f"{len(f):,}")
 c2.metric("Average rating", f"{f['vote_average'].mean():.2f}" if len(f) else "-")
-c3.metric("Countries", countries[countries["title_id"].isin(ids)]["country"].nunique())
+c3.metric("Countries", countries[countries["title_id"].isin(ids) & (countries["country"] != "Unknown")]["country"].nunique())
 c4.metric("Languages", f["language"].nunique())
 
 st.divider()
@@ -157,8 +157,12 @@ with left:
 with right:
     st.subheader("Top 10 countries")
     c = countries[countries["title_id"].isin(ids) & (countries["country"] != "Unknown")]
-    fig = px.bar(counts(c["country"], "country"), x="country", y="total")
-    st.plotly_chart(style(fig), use_container_width=True)
+    if c.empty:
+        st.info("No country data available for the selected filters.")
+    else:
+        fig = px.bar(counts(c["country"], "country"), x="country", y="total", text="total")
+        fig.update_traces(textposition="outside")
+        st.plotly_chart(style(fig), use_container_width=True)
 
 # ---------- Row 3 ----------
 left, right = st.columns(2)
