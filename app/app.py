@@ -12,6 +12,25 @@ st.set_page_config(page_title="Netflix Content Intelligence", layout="wide")
 st.markdown(
     f"""
     <style>
+    .stTabs [data-baseweb="tab-list"] {
+    gap: 12px;
+    background: #1A1A1A;
+    padding: 10px;
+    border-radius: 12px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background: #292929;
+    color: white;
+    border-radius: 10px;
+    padding: 10px 25px;
+    font-weight: 600;
+}
+
+.stTabs [aria-selected="true"] {
+    background: #E50914;
+    color: white;
+}
     .stApp {{ background: linear-gradient(180deg, {pal.BG_TOP} 0%, {pal.BG_BOTTOM} 100%); background-attachment: fixed; }}
     [data-testid="stSidebar"] {{
         background-color: {pal.BG_SIDEBAR};
