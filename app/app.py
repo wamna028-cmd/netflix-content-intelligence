@@ -9,7 +9,6 @@ import palette as pal
 
 st.set_page_config(page_title="Netflix Content Intelligence", layout="wide")
 
-# ---------- Netflix styling ----------
 st.markdown(
     f"""
     <style>
@@ -27,6 +26,29 @@ st.markdown(
     [data-testid="stMetricLabel"] {{ color: {pal.GREY}; }}
     h1, h2, h3 {{ letter-spacing: 0.5px; }}
     hr {{ border-color: {pal.BORDER}; }}
+    button[data-baseweb="tab"] {{
+        font-size: 20px;
+        padding: 14px 32px;
+        height: auto;
+        background-color: {pal.CARD};
+        border-radius: 8px 8px 0 0;
+        margin-right: 8px;
+        transition: all 0.2s ease;
+    }}
+     button[data-baseweb="tab"]:hover {{
+        background-color: {pal.NETFLIX_RED};
+        color: white;
+        transform: translateY(-3px);
+        
+    }}
+    button[data-baseweb="tab"][aria-selected="true"] {{
+        background-color: {pal.NETFLIX_RED};
+        color: white;
+    }}
+    button[data-baseweb="tab"] p {{
+        font-size: 20px;
+        font-weight: 600;
+    }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -93,47 +115,24 @@ ids = f["title_id"]
 st.markdown(
     f"<h1 style='color:{pal.NETFLIX_RED}'>Netflix Content Intelligence</h1>",
     unsafe_allow_html=True,
+    
 )
 st.caption("Data source: netflix_analysis.db")
 
-tv_selected = "tv" in media_sel
-cols = st.columns(4 if tv_selected else 3)
-
-cols[0].metric("Titles", f"{len(f):,}")
-cols[1].metric("Average rating", f"{f['vote_average'].mean():.2f}" if len(f) else "-")
-
-if tv_selected:
-    tv_ids_hdr = titles[titles["media_type"] == "tv"]["title_id"]
-    n_countries = countries[
-        countries["title_id"].isin(tv_ids_hdr)
-        & countries["title_id"].isin(ids)
-        & (countries["country"] != "Unknown")
-    ]["country"].nunique()
-    cols[2].metric("Countries (TV)", n_countries)
-    cols[3].metric("Languages", f["language"].nunique())
-else:
-    cols[2].metric("Languages", f["language"].nunique())
+c1, c2, c3, c4 = st.columns(4)
+c1.metric("Titles", f"{len(f):,}")
+c2.metric("Average rating", f"{f['vote_average'].mean():.2f}" if len(f) else "-")
+c3.metric("Countries", countries[countries["title_id"].isin(ids)]["country"].nunique())
+c4.metric("Languages", f["language"].nunique())
 
 st.divider()
 
-# ---------- Row 1 ----------
-left, right = st.columns(2)
+# ---------- Tabs ----------
+tab1, tab2, tab3 = st.tabs(["Overview", "Trend", "Table"])
 
-with left:
-    st.subheader("Titles released per year")
-    per_year = (
-        f.dropna(subset=["release_year"])
-        .assign(release_year=lambda d: d["release_year"].astype(int))
-        .groupby("release_year")
-        .size()
-        .reset_index(name="total")
-    )
-    fig = px.line(per_year, x="release_year", y="total")
-    fig = style(fig)
-    fig.update_traces(line_color=pal.NETFLIX_RED)
-    st.plotly_chart(fig, use_container_width=True)
+with tab1:
+    left, right = st.columns(2)
 
-with right:
     with right:
         st.subheader("Movies vs TV shows")
         mt = counts(f["media_type"], "media_type")
@@ -143,63 +142,77 @@ with right:
             values="total",
             color="media_type",
             color_discrete_map={"movie": pal.PIE_RED, "tv": pal.PIE_WHITE},
+        )
+        fig.update_layout(
+            paper_bgcolor=pal.CHART_BG,
+            font_color=pal.WHITE,
+            margin=dict(l=10, r=10, t=10, b=10),
+        )
+        fig.update_traces(
+            marker=dict(line=dict(color="#1A0507", width=2)),
+            textfont=dict(
+                color=["#FFFFFF" if m == "movie" else "#141414" for m in mt["media_type"]],
+                size=16,
+            ),
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    with left:
+        st.subheader("Top 10 genres")
+        g = title_genres[title_genres["title_id"].isin(ids)].merge(genres, on="genre_id")
+        fig = px.bar(counts(g["genre_name"], "genre"), x="genre", y="total")
+        st.plotly_chart(style(fig), use_container_width=True)
+
+    left, right = st.columns(2)
+
+    with left:
+        st.subheader("Top 10 countries")
+        c = countries[countries["title_id"].isin(ids) & (countries["country"] != "Unknown")]
+        fig = px.bar(counts(c["country"], "country"), x="country", y="total")
+        st.plotly_chart(style(fig), use_container_width=True)
+
+    with right:
+        st.subheader("Top 10 languages")
+        fig = px.bar(counts(f["language"], "language"), x="language", y="total")
+        st.plotly_chart(style(fig), use_container_width=True)
+
+    st.subheader("Rating distribution")
+    fig = px.histogram(f, x="vote_average", nbins=20)
+    fig = style(fig)
+    fig.update_traces(marker_line_color=pal.BORDER, marker_line_width=1)
+    st.plotly_chart(fig, use_container_width=True)
+
+with tab2:
+    st.subheader("Titles released per year")
+    per_year = (
+        f.dropna(subset=["release_year"])
+        .assign(release_year=lambda d: d["release_year"].astype(int))
+        .groupby(["release_year", "media_type"])
+        .size()
+        .reset_index(name="total")
+    )
+    fig = px.line(
+        per_year,
+        x="release_year",
+        y="total",
+        color="media_type",
+        color_discrete_map={"movie": pal.PIE_RED, "tv": pal.PIE_WHITE},
     )
     fig.update_layout(
+        plot_bgcolor=pal.CHART_BG,
         paper_bgcolor=pal.CHART_BG,
         font_color=pal.WHITE,
         margin=dict(l=10, r=10, t=10, b=10),
     )
-    fig.update_traces(
-        marker=dict(line=dict(color="#1A0507", width=2)),
-        textfont=dict(
-            color=["#FFFFFF" if m == "movie" else "#141414" for m in mt["media_type"]],
-            size=16,
-        ),
+    fig.update_xaxes(gridcolor=pal.BORDER, zerolinecolor=pal.BORDER)
+    fig.update_yaxes(gridcolor=pal.BORDER, zerolinecolor=pal.BORDER)
+    st.plotly_chart(fig, use_container_width=True)
+
+with tab3:
+    st.subheader("Top rated titles")
+    top = (
+        f[f["vote_count"] >= 50]
+        .sort_values("vote_average", ascending=False)
+        .head(10)[["title", "media_type", "release_year", "language", "vote_average", "vote_count"]]
     )
-    st.plotly_chart(fig, use_container_width=True)
-# ---------- Row 2 ----------
-left, right = st.columns(2)
-
-with left:
-    st.subheader("Top 10 genres")
-    g = title_genres[title_genres["title_id"].isin(ids)].merge(genres, on="genre_id")
-    fig = px.bar(counts(g["genre_name"], "genre"), x="genre", y="total")
-    st.plotly_chart(style(fig), use_container_width=True)
-
-with right:
-    st.subheader("Top 10 languages")
-    fig = px.bar(counts(f["language"], "language"), x="language", y="total")
-    st.plotly_chart(style(fig), use_container_width=True)
-
-# ---------- Row 3 ----------
-left, right = st.columns(2)
-
-with left:
-    st.subheader("Rating distribution")
-    fig = px.histogram(f, x="vote_average", nbins=20)
-    fig = style(fig)
-    fig.update_traces(marker_line_color=pal.BG, marker_line_width=1)
-    st.plotly_chart(fig, use_container_width=True)
-
-with right:
-    if "tv" in media_sel:
-        st.subheader("Top 10 countries (TV shows)")
-        tv_ids = titles[titles["media_type"] == "tv"]["title_id"]
-        c = countries[
-            countries["title_id"].isin(tv_ids)
-            & countries["title_id"].isin(ids)
-            & (countries["country"] != "Unknown")
-        ]
-        if not c.empty:
-            fig = px.bar(counts(c["country"], "country"), x="country", y="total", text="total")
-            fig.update_traces(textposition="outside")
-            st.plotly_chart(style(fig), use_container_width=True)
-
-# ---------- Table ----------
-st.subheader("Top rated titles")
-top = (
-    f[f["vote_count"] >= 50]
-    .sort_values("vote_average", ascending=False)
-    .head(10)[["title", "media_type", "release_year", "language", "vote_average", "vote_count"]]
-)
-st.dataframe(top, use_container_width=True, hide_index=True)
+    st.dataframe(top, use_container_width=True, hide_index=True)
