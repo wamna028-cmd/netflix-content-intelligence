@@ -155,29 +155,33 @@ with left:
     st.plotly_chart(style(fig), use_container_width=True)
 
 with right:
-    st.subheader("Top 10 countries")
-    c = countries[countries["title_id"].isin(ids) & (countries["country"] != "Unknown")]
-    if c.empty:
-        st.info("No country data available for the selected filters.")
-    else:
-        fig = px.bar(counts(c["country"], "country"), x="country", y="total", text="total")
-        fig.update_traces(textposition="outside")
-        st.plotly_chart(style(fig), use_container_width=True)
+    st.subheader("Top 10 languages")
+    fig = px.bar(counts(f["language"], "language"), x="language", y="total")
+    st.plotly_chart(style(fig), use_container_width=True)
 
 # ---------- Row 3 ----------
 left, right = st.columns(2)
 
 with left:
-    st.subheader("Top 10 languages")
-    fig = px.bar(counts(f["language"], "language"), x="language", y="total")
-    st.plotly_chart(style(fig), use_container_width=True)
-
-with right:
     st.subheader("Rating distribution")
     fig = px.histogram(f, x="vote_average", nbins=20)
     fig = style(fig)
     fig.update_traces(marker_line_color=pal.BG, marker_line_width=1)
     st.plotly_chart(fig, use_container_width=True)
+
+with right:
+    if "tv" in media_sel:
+        st.subheader("Top 10 countries (TV shows)")
+        tv_ids = titles[titles["media_type"] == "tv"]["title_id"]
+        c = countries[
+            countries["title_id"].isin(tv_ids)
+            & countries["title_id"].isin(ids)
+            & (countries["country"] != "Unknown")
+        ]
+        if not c.empty:
+            fig = px.bar(counts(c["country"], "country"), x="country", y="total", text="total")
+            fig.update_traces(textposition="outside")
+            st.plotly_chart(style(fig), use_container_width=True)
 
 # ---------- Table ----------
 st.subheader("Top rated titles")
