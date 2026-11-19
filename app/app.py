@@ -12,41 +12,40 @@ st.set_page_config(page_title="Netflix Content Intelligence", layout="wide")
 st.markdown(
     f"""
     <style>
-    /* Netflix navigation boxes */
-    .stTabs [data-baseweb="tab-list"] {{
-        gap: 12px;
-        background: #1A1A1A;
-        padding: 10px;
-        border-radius: 12px;
-    }}
+    /* Netflix tab buttons */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 15px !important;
+    background: transparent !important;
+    padding: 12px 0 !important;
+}
 
-    .stTabs [data-baseweb="tab"] {{
-        background-color: {pal.CARD};
-        color: white;
-        border: 1px solid #444;
-        border-radius: 10px;
-        padding: 14px 32px;
-        font-size: 20px;
-        font-weight: 600;
-        transition: all 0.2s ease;
-    }}
+.stTabs button[data-baseweb="tab"] {
+    background-color: #292929 !important;
+    color: white !important;
+    border: 1px solid #555 !important;
+    border-radius: 12px !important;
+    padding: 12px 28px !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
 
-    .stTabs [data-baseweb="tab"]:hover {{
-        background-color: {pal.NETFLIX_RED};
-        color: white;
-        transform: translateY(-3px);
-    }}
+.stTabs button[data-baseweb="tab"]:hover {
+    background-color: #E50914 !important;
+    border-color: #E50914 !important;
+}
 
-    .stTabs [data-baseweb="tab"][aria-selected="true"] {{
-        background-color: {pal.NETFLIX_RED};
-        color: white;
-        border: 1px solid {pal.NETFLIX_RED};
-    }}
+.stTabs button[data-baseweb="tab"][aria-selected="true"] {
+    background-color: #E50914 !important;
+    color: white !important;
+    border: 1px solid #E50914 !important;
+}
 
-    .stTabs [data-baseweb="tab"] p {{
-        font-size: 20px;
-        font-weight: 600;
-    }}
+.stTabs button[data-baseweb="tab"] p {
+    color: white !important;
+    font-weight: 600 !important;
+}
+ 
 
     /* Existing dashboard styling */
     .stApp {{ background: linear-gradient(180deg, {pal.BG_TOP} 0%, {pal.BG_BOTTOM} 100%); background-attachment: fixed; }}
