@@ -227,4 +227,15 @@ with tab2:
         font_color=pal.WHITE,
         margin=dict(l=10, r=10, t=10, b=10),
     )
-    fig.update_xaxes(gridcolor
+    fig.update_xaxes(gridcolor=pal.BORDER, zerolinecolor=pal.BORDER)
+    fig.update_yaxes(gridcolor=pal.BORDER, zerolinecolor=pal.BORDER)
+    st.plotly_chart(fig, use_container_width=True)
+
+with tab3:
+    st.subheader("Top rated titles")
+    top = (
+        f[f["vote_count"] >= 50]
+        .sort_values("vote_average", ascending=False)
+        .head(10)[["title", "media_type", "release_year", "language", "vote_average", "vote_count"]]
+    )
+    st.dataframe(top, use_container_width=True, hide_index=True)
