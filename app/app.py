@@ -12,14 +12,17 @@ st.set_page_config(page_title="Netflix Content Intelligence", layout="wide")
 st.markdown(
     f"""
     <style>
-    /* Card-style tabs */
-    [data-baseweb="tab-list"] {{
+     /* Card-style tabs */
+    div[data-baseweb="tab-list"],
+    [data-testid="stTabs"] [role="tablist"] {{
         gap: 16px !important;
         background: transparent !important;
         padding: 8px 0 !important;
     }}
 
-    button[data-baseweb="tab"] {{
+    button[role="tab"],
+    button[data-baseweb="tab"],
+    [data-testid="stTab"] {{
         background-color: {pal.CARD} !important;
         border: 1px solid {pal.BORDER} !important;
         border-left: 4px solid {pal.NETFLIX_RED} !important;
@@ -28,24 +31,25 @@ st.markdown(
         height: auto !important;
         min-width: 140px;
         justify-content: center;
-        transition: all 0.2s ease;
     }}
 
-    button[data-baseweb="tab"] p {{
+    button[role="tab"] p,
+    button[role="tab"] span,
+    [data-testid="stTab"] p {{
         color: white !important;
         font-size: 18px !important;
         font-weight: 600 !important;
     }}
 
-    button[data-baseweb="tab"]:hover {{
+    button[role="tab"]:hover,
+    [data-testid="stTab"]:hover {{
         background-color: {pal.BORDER} !important;
-        transform: translateY(-2px);
     }}
 
-    button[data-baseweb="tab"][aria-selected="true"] {{
+    button[role="tab"][aria-selected="true"],
+    [data-testid="stTab"][aria-selected="true"] {{
         background-color: {pal.NETFLIX_RED} !important;
         border: 1px solid {pal.NETFLIX_RED} !important;
-        box-shadow: 0 4px 14px rgba(229, 9, 20, 0.35);
     }}
 
     /* hide the default underline */
