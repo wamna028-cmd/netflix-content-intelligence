@@ -12,38 +12,46 @@ st.set_page_config(page_title="Netflix Content Intelligence", layout="wide")
 st.markdown(
     f"""
     <style>
-    /* Netflix tab buttons */
-.stTabs [data-baseweb="tab-list"] {{
-        gap: 15px !important;
-        background: #1A1A1A !important;
-        padding: 12px !important;
-        border-radius: 12px !important;
+    /* Card-style tabs */
+    [data-baseweb="tab-list"] {{
+        gap: 16px !important;
+        background: transparent !important;
+        padding: 8px 0 !important;
     }}
 
-    .stTabs button[data-baseweb="tab"] {{
-        background-color: #292929 !important;
+    button[data-baseweb="tab"] {{
+        background-color: {pal.CARD} !important;
+        border: 1px solid {pal.BORDER} !important;
+        border-left: 4px solid {pal.NETFLIX_RED} !important;
+        border-radius: 10px !important;
+        padding: 14px 36px !important;
+        height: auto !important;
+        min-width: 140px;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }}
+
+    button[data-baseweb="tab"] p {{
         color: white !important;
-        border: 1px solid #555 !important;
-        border-radius: 12px !important;
-        padding: 12px 28px !important;
         font-size: 18px !important;
         font-weight: 600 !important;
     }}
 
-    .stTabs button[data-baseweb="tab"]:hover {{
-        background-color: #E50914 !important;
-        color: white !important;
+    button[data-baseweb="tab"]:hover {{
+        background-color: {pal.BORDER} !important;
+        transform: translateY(-2px);
     }}
 
-    .stTabs button[data-baseweb="tab"][aria-selected="true"] {{
-        background-color: #E50914 !important;
-        color: white !important;
-        border: 1px solid #E50914 !important;
+    button[data-baseweb="tab"][aria-selected="true"] {{
+        background-color: {pal.NETFLIX_RED} !important;
+        border: 1px solid {pal.NETFLIX_RED} !important;
+        box-shadow: 0 4px 14px rgba(229, 9, 20, 0.35);
     }}
 
-    .stTabs button[data-baseweb="tab"] p {{
-        color: white !important;
-        font-weight: 600 !important;
+    /* hide the default underline */
+    [data-baseweb="tab-highlight"],
+    [data-baseweb="tab-border"] {{
+        display: none !important;
     }}
 
     /* Existing dashboard styling */
@@ -131,7 +139,6 @@ ids = f["title_id"]
 st.markdown(
     f"<h1 style='color:{pal.NETFLIX_RED}'>Netflix Content Intelligence</h1>",
     unsafe_allow_html=True,
-    
 )
 st.caption("Data source: netflix_analysis.db")
 
@@ -220,15 +227,4 @@ with tab2:
         font_color=pal.WHITE,
         margin=dict(l=10, r=10, t=10, b=10),
     )
-    fig.update_xaxes(gridcolor=pal.BORDER, zerolinecolor=pal.BORDER)
-    fig.update_yaxes(gridcolor=pal.BORDER, zerolinecolor=pal.BORDER)
-    st.plotly_chart(fig, use_container_width=True)
-
-with tab3:
-    st.subheader("Top rated titles")
-    top = (
-        f[f["vote_count"] >= 50]
-        .sort_values("vote_average", ascending=False)
-        .head(10)[["title", "media_type", "release_year", "language", "vote_average", "vote_count"]]
-    )
-    st.dataframe(top, use_container_width=True, hide_index=True)
+    fig.update_xaxes(gridcolor
