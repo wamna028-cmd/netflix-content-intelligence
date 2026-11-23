@@ -1,8 +1,10 @@
 import sqlite3
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
 import palette as pal
@@ -116,6 +118,19 @@ def style(fig):
 
 def counts(series, label, n=10):
     return series.value_counts().head(n).rename_axis(label).reset_index(name="total")
+
+
+def kde_curve(values, grid):
+    """Smooth density curve (same idea as seaborn kdeplot), no scipy needed."""
+    v = np.asarray(values, dtype=float)
+    v = v[~np.isnan(v)]
+    if len(v) < 2:
+        return None
+    bw = 1.06 * v.std() * len(v) ** (-1 / 5)
+    if bw == 0:
+        bw = 0.1
+    z = (grid[:, None] - v[None, :]) / bw
+    return np.exp(-0.5 * z ** 2).sum(axis=1) / (len(v) * bw * np.sqrt(2 * np.pi))
 
 
 titles = load_table("titles")
@@ -236,18 +251,26 @@ with tab2:
     st.plotly_chart(fig, use_container_width=True)
 
 with tab3:
-    # Chart 7: Rating density, movies vs TV
+    # Chart 7: Rating density, movies vs TV (smooth curves, like the notebook)
     st.subheader("Rating density: movies vs TV shows")
-    fig = px.histogram(
-        f,
-        x="vote_average",
-        color="media_type",
-        nbins=30,
-        histnorm="probability density",
-        barmode="overlay",
-        opacity=0.65,
-        color_discrete_map={"movie": pal.PIE_RED, "tv": pal.PIE_WHITE},
-    )
+    grid = np.linspace(0, 10, 300)
+    colors = {"movie": pal.PIE_RED, "tv": pal.PIE_WHITE}
+    fig = go.Figure()
+    for m in sorted(f["media_type"].dropna().unique()):
+        y = kde_curve(f.loc[f["media_type"] == m, "vote_average"], grid)
+        if y is None:
+            continue
+        fig.add_trace(
+            go.Scatter(
+                x=grid,
+                y=y,
+                mode="lines",
+                name=m,
+                fill="tozeroy",
+                opacity=0.7,
+                line=dict(color=colors.get(m, pal.NETFLIX_RED), width=2),
+            )
+        )
     fig.update_layout(
         plot_bgcolor=pal.CHART_BG,
         paper_bgcolor=pal.CHART_BG,
