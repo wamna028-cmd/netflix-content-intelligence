@@ -155,7 +155,7 @@ c4.metric("Languages", f["language"].nunique())
 st.divider()
 
 # ---------- Tabs ----------
-tab1, tab2, tab3, tab4 = st.tabs(["Overview", "Trend", "Table", "Ratings"])
+tab1, tab2, tab3, tab4 = st.tabs(["Overview", "Trend", "Ratings", "Table"])
 
 with tab1:
     left, right = st.columns(2)
@@ -236,15 +236,6 @@ with tab2:
     st.plotly_chart(fig, use_container_width=True)
 
 with tab3:
-    st.subheader("Top rated titles")
-    top = (
-        f[f["vote_count"] >= 50]
-        .sort_values("vote_average", ascending=False)
-        .head(10)[["title", "media_type", "release_year", "language", "vote_average", "vote_count"]]
-    )
-    st.dataframe(top, use_container_width=True, hide_index=True)
-
-with tab4:
     # Chart 7: Rating density
     st.subheader("Rating density")
     fig = px.histogram(f, x="vote_average", nbins=30, histnorm="probability density")
@@ -283,3 +274,12 @@ with tab4:
     fig.update_yaxes(range=[0, 10], title="average rating")
     fig.update_xaxes(title="genre")
     st.plotly_chart(style(fig), use_container_width=True)
+
+with tab4:
+    st.subheader("Top rated titles")
+    top = (
+        f[f["vote_count"] >= 50]
+        .sort_values("vote_average", ascending=False)
+        .head(10)[["title", "media_type", "release_year", "language", "vote_average", "vote_count"]]
+    )
+    st.dataframe(top, use_container_width=True, hide_index=True)
