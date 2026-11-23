@@ -155,7 +155,7 @@ c4.metric("Languages", f["language"].nunique())
 st.divider()
 
 # ---------- Tabs ----------
-tab1, tab2, tab3 = st.tabs(["Overview", "Trend", "Table"])
+tab1, tab2, tab3, tab4 = st.tabs(["Overview", "Trend", "Table", "Ratings"])
 
 with tab1:
     left, right = st.columns(2)
@@ -213,33 +213,4 @@ with tab2:
     st.subheader("Titles released per year")
     per_year = (
         f.dropna(subset=["release_year"])
-        .assign(release_year=lambda d: d["release_year"].astype(int))
-        .groupby(["release_year", "media_type"])
-        .size()
-        .reset_index(name="total")
-    )
-    fig = px.line(
-        per_year,
-        x="release_year",
-        y="total",
-        color="media_type",
-        color_discrete_map={"movie": pal.PIE_RED, "tv": pal.PIE_WHITE},
-    )
-    fig.update_layout(
-        plot_bgcolor=pal.CHART_BG,
-        paper_bgcolor=pal.CHART_BG,
-        font_color=pal.WHITE,
-        margin=dict(l=10, r=10, t=10, b=10),
-    )
-    fig.update_xaxes(gridcolor=pal.BORDER, zerolinecolor=pal.BORDER)
-    fig.update_yaxes(gridcolor=pal.BORDER, zerolinecolor=pal.BORDER)
-    st.plotly_chart(fig, use_container_width=True)
-
-with tab3:
-    st.subheader("Top rated titles")
-    top = (
-        f[f["vote_count"] >= 50]
-        .sort_values("vote_average", ascending=False)
-        .head(10)[["title", "media_type", "release_year", "language", "vote_average", "vote_count"]]
-    )
-    st.dataframe(top, use_container_width=True, hide_index=True)
+        .assign(release_year=lambda d:
